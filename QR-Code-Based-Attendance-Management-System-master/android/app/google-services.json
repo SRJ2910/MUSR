@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "1001440404601",
+    "project_id": "checkclass-45bb9",
+    "storage_bucket": "checkclass-45bb9.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1001440404601:android:0298384c15d89d35a760a8",
+        "android_client_info": {
+          "package_name": "com.srj.checkclass"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1001440404601-0m9jhfjhhg08onfvgoqfoij9jfiakq5c.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBwrIocQu8jG_zjyVLnrRr4vpwh0S2WwFg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1001440404601-0m9jhfjhhg08onfvgoqfoij9jfiakq5c.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
