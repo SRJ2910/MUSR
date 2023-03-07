@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:miniproject/pages/student_login.dart';
+import 'package:miniproject/pages/student/student_login.dart';
 import 'package:miniproject/services/authentication.dart';
-import 'package:miniproject/pages/student_home_page.dart';
+import 'package:miniproject/pages/student/student_home_page.dart';
 
 enum AuthStatus {
   NOT_DETERMINED,
