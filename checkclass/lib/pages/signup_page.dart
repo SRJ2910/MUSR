@@ -18,8 +18,11 @@ class _SignuppageState extends State<Signuppage> {
   String _password;
   String _errorMessage;
   String _role;
+  String _id;
+  String _batch;
 
   bool _isLoading;
+  bool _isStudent = false;
 
   // Check if form is valid before perform login or signup
   bool validateAndSave() {
@@ -45,14 +48,24 @@ class _SignuppageState extends State<Signuppage> {
         BaseAuth auth = new Auth();
         userId = await auth.signUp(_email, _password);
 
-        var result = await Firestore.instance
-            .collection('user')
-            .document(userId)
-            .setData({
+//add all user to database
+        await Firestore.instance.collection('user').document(userId).setData({
           'email': _email,
           'role': _role,
           'name': _name,
         });
+
+//add student to database
+        if (_isStudent) {
+          await Firestore.instance
+              .collection('student')
+              .document(_batch)
+              .setData({
+            'email': _email,
+            'name': _name,
+            'id': _id,
+          });
+        }
         print("User Added Successfully");
         setState(() {
           _isLoading = false;
@@ -129,11 +142,65 @@ class _SignuppageState extends State<Signuppage> {
               showEmailInput(),
               showPasswordInput(),
               showDropDown(),
+              showID(),
+              showBatch(),
               showPrimaryButton(),
               showErrorMessage(),
             ],
           ),
         ));
+  }
+
+  Widget showID() {
+    if (_isStudent) {
+      return Padding(
+        padding: const EdgeInsets.fromLTRB(0.0, 15.0, 0.0, 0.0),
+        child: TextFormField(
+          maxLines: 1,
+          keyboardType: TextInputType.number,
+          autofocus: false,
+          decoration: InputDecoration(
+            hintText: 'Institute ID',
+            icon: Icon(
+              Icons.view_comfortable_outlined,
+              color: Colors.grey,
+            ),
+          ),
+          validator: (value) => value.isEmpty ? 'ID can\'t be empty' : null,
+          onSaved: (value) => _id = value.trim(),
+        ),
+      );
+    } else {
+      return new Container(
+        height: 0.0,
+      );
+    }
+  }
+
+  Widget showBatch() {
+    if (_isStudent) {
+      return Padding(
+        padding: const EdgeInsets.fromLTRB(0.0, 15.0, 0.0, 0.0),
+        child: TextFormField(
+          maxLines: 1,
+          keyboardType: TextInputType.number,
+          autofocus: false,
+          decoration: InputDecoration(
+            hintText: 'Batch start year (eg. 2020) ',
+            icon: Icon(
+              Icons.calendar_month_rounded,
+              color: Colors.grey,
+            ),
+          ),
+          validator: (value) => value.isEmpty ? 'Batch can\'t be empty' : null,
+          onSaved: (value) => _batch = value.trim(),
+        ),
+      );
+    } else {
+      return new Container(
+        height: 0.0,
+      );
+    }
   }
 
   Widget showDropDown() {
@@ -164,6 +231,15 @@ class _SignuppageState extends State<Signuppage> {
                 hint: Text("Select Role"),
                 onChanged: (value) {
                   print(value);
+                  if (value == "Student") {
+                    setState(() {
+                      _isStudent = true;
+                    });
+                  } else {
+                    setState(() {
+                      _isStudent = false;
+                    });
+                  }
                   setState(() {
                     _role = value;
                   });

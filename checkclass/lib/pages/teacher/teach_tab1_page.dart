@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:miniproject/pages/QR/qr_generator.dart';
 import 'package:miniproject/services/authentication.dart';
 import 'package:encrypt/encrypt.dart' as ency;
 
@@ -24,7 +25,6 @@ class _TeacherBasicPageState extends State<TeacherBasicPage> {
   //final FirebaseDatabase _database = FirebaseDatabase.instance;
   final GlobalKey<FormState> _formKey1 = GlobalKey<FormState>();
 
-
   //bool _isEmailVerified = false;
   String classname;
   String date;
@@ -34,11 +34,20 @@ class _TeacherBasicPageState extends State<TeacherBasicPage> {
   String userId = '';
   String saveMessage = 'Click save to update or cancel to reject';
 
+  String _courseId;
+  String _courseName;
+  String _batch;
+  String _errorMessage;
+  bool _isLoading;
+  bool _fetchingdata;
 
-
+  List<String> _coursenameList = [];
+  List<String> _courseIdList = [];
 
   bool validateAndSave() {
+    print(3);
     final form = _formKey1.currentState;
+    print(form.toString());
     if (form.validate()) {
       form.save();
       return true;
@@ -46,9 +55,52 @@ class _TeacherBasicPageState extends State<TeacherBasicPage> {
     return false;
   }
 
+  void validateAndSubmit() async {
+    print(1);
+    setState(() {
+      _errorMessage = "";
+      _isLoading = true;
+    });
+    print(2);
+    if (validateAndSave()) {
+      try {
+//add all user to database
+        await Firestore.instance
+            .collection('course')
+            .document(_courseId)
+            .setData({'id': _courseId, 'name': _courseName, 'batch': _batch});
+
+//add student to database
+
+        print("course Added Successfully");
+        setState(() {
+          _isLoading = false;
+        });
+        // print(result['role']);
+        // if (result['role'] == "student")
+        //   throw Exception("Only Teachers can login");
+        // print('Signed in: $userId');
+        // setState(() {
+        //   _isLoading = false;
+        // });
+
+      } catch (e) {
+        print('Error: $e');
+        setState(() {
+          _isLoading = false;
+          _errorMessage = e.message;
+          _formKey1.currentState.reset();
+        });
+      }
+    }
+  }
+
   @override
   void initState() {
     userId = widget.userId;
+    _isLoading = false;
+    _fetchingdata = false;
+    fetchdata();
     super.initState();
     //_checkEmailVerification();
   }
@@ -62,64 +114,125 @@ class _TeacherBasicPageState extends State<TeacherBasicPage> {
     }
   }
 
+  fetchdata() async {
+    try {
+      await Firestore.instance
+          .collection('course')
+          .getDocuments()
+          .then((snapshot) {
+        snapshot.documents.forEach((f) {
+          _coursenameList.add(f.data['name']);
+          _courseIdList.add(f.data['id']);
+        });
+      });
+      setState(() {
+        _fetchingdata = true;
+      });
+    } catch (e) {
+      print(e);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: Scaffold(
-          resizeToAvoidBottomInset: false,
-          body: SingleChildScrollView(
-            /*ConstrainedBox(
-            constraints: new BoxConstraints(
-              minHeight: 500,
-              minWidth: 300,
-              maxHeight: 700,
-              maxWidth: 500,
-            ),*/
-            child: Center(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: <Widget>[
-                  SingleChildScrollView(
-                    child: Column(
-                      children: <Widget>[
-                        enterDetails(),
-                        formInput(),
-                        GestureDetector(
-                          onTap: () {
-                  showCustomDialogWithImage(context);
-                            },
-              child: Container(
-                            margin: EdgeInsets.all(70),
-                            width: 300,
-                            height: 40,
-                            //color:Colors.pink,
-                            decoration: BoxDecoration(
-                                color: Colors.pink,
-                                shape: BoxShape.rectangle,
-                                //borderRadius: BorderRadius.circular(10),
-                                borderRadius:
-                                    BorderRadius.all(Radius.circular(25))),
-
-                            child: const Center(
-                              child: Text(
-                                'Generate QR Code',
-                                style: TextStyle(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 16),
-                              ),
-                            ),
-                          ),
+    return Stack(
+      children: [
+        _fetchingdata
+            ? StreamBuilder(
+                stream: Firestore.instance.collection('course').snapshots(),
+                builder: (BuildContext context,
+                    AsyncSnapshot<QuerySnapshot> snapshot) {
+                  if (!snapshot.hasData) {
+                    return Center(
+                      child: CircularProgressIndicator(),
+                    );
+                  }
+                  return ListView(
+                    children: snapshot.data.documents.map((document) {
+                      return ListTile(
+                        leading: Icon(
+                          Icons.book,
+                          color: Colors.black,
                         ),
-                      ],
-                    ),
-                  ),
-                ],
+                        title: Text(document['name']),
+                        subtitle: Text(document['id']),
+                        trailing: Text(document['batch']),
+                        onTap: () {
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => QrGenerator(
+                                        courseId: document['id'],
+                                        courseName: document['name'],
+                                        batch: document['batch'],
+                                      )));
+                        },
+                      );
+                    }).toList(),
+                  );
+                })
+            : Center(
+                child: CircularProgressIndicator(),
               ),
-            ),
-          )),
+        Align(
+            alignment: Alignment.bottomRight,
+            child: Container(
+              margin: EdgeInsets.only(bottom: 20, right: 20),
+              child: addCourse(),
+            ))
+      ],
     );
+    // body: SingleChildScrollView(
+    //   /*ConstrainedBox(
+    //   constraints: new BoxConstraints(
+    //     minHeight: 500,
+    //     minWidth: 300,
+    //     maxHeight: 700,
+    //     maxWidth: 500,
+    //   ),*/
+    //   child: Center(
+    //     child: Column(
+    //       crossAxisAlignment: CrossAxisAlignment.center,
+    //       children: <Widget>[
+    //         SingleChildScrollView(
+    //           child: Column(
+    //             children: <Widget>[
+    //               enterDetails(),
+    //               formInput(),
+    //               GestureDetector(
+    //                 onTap: () {
+    //                   showCustomDialogWithImage(context);
+    //                 },
+    //                 child: Container(
+    //                   margin: EdgeInsets.all(70),
+    //                   width: 300,
+    //                   height: 40,
+    //                   //color:Colors.pink,
+    //                   decoration: BoxDecoration(
+    //                       color: Colors.pink,
+    //                       shape: BoxShape.rectangle,
+    //                       //borderRadius: BorderRadius.circular(10),
+    //                       borderRadius:
+    //                           BorderRadius.all(Radius.circular(25))),
+
+    //                   child: const Center(
+    //                     child: Text(
+    //                       'Generate QR Code',
+    //                       style: TextStyle(
+    //                           color: Colors.white,
+    //                           fontWeight: FontWeight.bold,
+    //                           fontSize: 16),
+    //                     ),
+    //                   ),
+    //                 ),
+    //               ),
+    //             ],
+    //           ),
+    //         ),
+    //       ],
+    //     ),
+    //   ),
+    // )
   }
 
   Widget formInput() {
@@ -134,6 +247,93 @@ class _TeacherBasicPageState extends State<TeacherBasicPage> {
           codeInput(),
         ],
       ),
+    );
+  }
+
+  Widget addCourse() {
+    return FloatingActionButton(
+      onPressed: () {
+        return showModalBottomSheet(
+          isScrollControlled: true,
+          context: context,
+          builder: (context) {
+            return Form(
+              key: _formKey1,
+              child: Padding(
+                padding: EdgeInsets.only(
+                    bottom: MediaQuery.of(context).viewInsets.bottom),
+                child: Container(
+                    height: 250.0,
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 0.0),
+                      child: Column(
+                        children: [
+                          TextFormField(
+                            maxLines: 1,
+                            keyboardType: TextInputType.emailAddress,
+                            autofocus: true,
+                            decoration: new InputDecoration(
+                                hintText: 'Course ID',
+                                icon: new Icon(
+                                  Icons.indeterminate_check_box_outlined,
+                                  color: Colors.grey,
+                                )),
+                            validator: (value) => value.isEmpty
+                                ? 'Course ID can\'t be empty'
+                                : null,
+                            onSaved: (value) => _courseId = value.trim(),
+                          ),
+                          TextFormField(
+                            maxLines: 1,
+                            keyboardType: TextInputType.text,
+                            autofocus: false,
+                            decoration: new InputDecoration(
+                                hintText: 'Course Name',
+                                icon: new Icon(
+                                  Icons.book,
+                                  color: Colors.grey,
+                                )),
+                            validator: (value) => value.isEmpty
+                                ? 'Course name can\'t be empty'
+                                : null,
+                            onSaved: (value) => _courseName = value.trim(),
+                          ),
+                          TextFormField(
+                            maxLines: 1,
+                            keyboardType: TextInputType.text,
+                            autofocus: true,
+                            decoration: new InputDecoration(
+                                hintText: 'Batch Year',
+                                icon: new Icon(
+                                  Icons.numbers,
+                                  color: Colors.grey,
+                                )),
+                            validator: (value) => value.isEmpty
+                                ? 'Batch number can\'t be empty'
+                                : null,
+                            onSaved: (value) => _batch = value.trim(),
+                          ),
+                          SizedBox(height: 20),
+                          RaisedButton(
+                            elevation: 5.0,
+                            shape: new RoundedRectangleBorder(
+                                borderRadius: new BorderRadius.circular(30.0)),
+                            color: Colors.pink,
+                            onPressed: validateAndSubmit,
+                            child: new Text('Create Course',
+                                style: new TextStyle(
+                                    fontSize: 20.0, color: Colors.white)),
+                          ),
+                        ],
+                      ),
+                    )),
+              ),
+            );
+          },
+        );
+      },
+      child: Icon(Icons.add),
+      backgroundColor: Colors.pink,
     );
   }
 
@@ -167,7 +367,6 @@ class _TeacherBasicPageState extends State<TeacherBasicPage> {
     return Padding(
       padding: const EdgeInsets.fromLTRB(0.0, 8.0, 0.0, 5.0),
       child: new TextFormField(
-        
         maxLines: 1,
         textAlign: TextAlign.center,
         decoration: new InputDecoration(
@@ -240,13 +439,22 @@ class _TeacherBasicPageState extends State<TeacherBasicPage> {
     if (validateAndSave()) {
       //print(userId);
       var firebaseUser = await FirebaseAuth.instance.currentUser();
-      String qrData = classname + '/' + date + '/' + check + '/' + secretcode + '/' + firebaseUser.uid;
+      String qrData = classname +
+          '/' +
+          date +
+          '/' +
+          check +
+          '/' +
+          secretcode +
+          '/' +
+          firebaseUser.uid;
 
       final key = ency.Key.fromUtf8('JingalalahuhuJingalalahuhuJingal');
       final iv = ency.IV.fromLength(16);
       final encrypter = ency.Encrypter(ency.AES(key));
       final encryptedQR = encrypter.encrypt(qrData, iv: iv);
-      final decryptedQR = encrypter.decrypt(encryptedQR, iv: iv);//used in student's home page
+      final decryptedQR =
+          encrypter.decrypt(encryptedQR, iv: iv); //used in student's home page
 
       print(qrData);
       print(encryptedQR.base64);
@@ -254,8 +462,6 @@ class _TeacherBasicPageState extends State<TeacherBasicPage> {
       print(encryptedQR.base64);
 
       Dialog dialogWithImage = Dialog(
-    
-
         child: Container(
           height: 330.0,
           width: 300.0,
@@ -282,7 +488,7 @@ class _TeacherBasicPageState extends State<TeacherBasicPage> {
                     color: Colors.blue,
                     onPressed: () {
                       saveTheForm(qrData);
-          },
+                    },
                     child: Text(
                       'Save',
                       style: TextStyle(fontSize: 18.0, color: Colors.white),
@@ -298,7 +504,7 @@ class _TeacherBasicPageState extends State<TeacherBasicPage> {
                         saveMessage =
                             'Click save to update or cancel to reject';
                       });
-                    Navigator.of(context, rootNavigator: true).pop();
+                      Navigator.of(context, rootNavigator: true).pop();
                     },
                     child: Text(
                       'Cancel',
@@ -315,15 +521,14 @@ class _TeacherBasicPageState extends State<TeacherBasicPage> {
           ),
         ),
       );
-     showDialog(
+      showDialog(
           context: context,
           builder: (BuildContext context) => dialogWithImage,
-         barrierDismissible: false
-        );
+          barrierDismissible: false);
     }
   }
 
-  void showCustomDialog(BuildContext context, String msg,String msg1) {
+  void showCustomDialog(BuildContext context, String msg, String msg1) {
     AlertDialog dialogWithImage = AlertDialog(
       title: Text(msg1),
       content: Text(msg),
@@ -402,7 +607,7 @@ class _TeacherBasicPageState extends State<TeacherBasicPage> {
     if (codeExists == 1) {
       Navigator.of(context, rootNavigator: true).pop();
       showCustomDialog(
-          context, 'Secret code already exists.Please enter a new one','Oops');
+          context, 'Secret code already exists.Please enter a new one', 'Oops');
     } else {
       try {
         updatedData = data[day]['codes'] + [secretCode];
@@ -419,10 +624,11 @@ class _TeacherBasicPageState extends State<TeacherBasicPage> {
             .updateData({
           "$day.codes": updatedData,
         });
-       // Navigator.of(context, rootNavigator: true).pop();
-       showCustomDialog(context, 'QR Saved and ready to be scanned','Success');
+        // Navigator.of(context, rootNavigator: true).pop();
+        showCustomDialog(
+            context, 'QR Saved and ready to be scanned', 'Success');
       } catch (e) {
-        showCustomDialog(context, 'Update Failed,Please try again','Error');
+        showCustomDialog(context, 'Update Failed,Please try again', 'Error');
         print(e.toString());
       }
     }

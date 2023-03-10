@@ -1,7 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:miniproject/pages/register_page.dart';
 import 'package:miniproject/services/authentication.dart';
-
 
 /*import 'package:qr_flutter/qr_flutter.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';*/
@@ -27,6 +27,10 @@ class _TeacherHomePageState extends State<TeacherHomePage> {
 
   signOut() async {
     try {
+      Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (context) => Registration()),
+          (route) => false);
       await widget.auth.signOut();
       widget.logoutCallback();
     } catch (e) {
@@ -51,7 +55,7 @@ class _TeacherHomePageState extends State<TeacherHomePage> {
               ],
             ),
             title: Text(
-              ' Welcome Teacher',
+              'Welcome',
               style: TextStyle(
                   fontSize: 25,
                   color: Colors.white,

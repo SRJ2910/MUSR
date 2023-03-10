@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:miniproject/pages/QR/qr_generator.dart';
 import 'package:miniproject/pages/register_page.dart';
 import 'package:miniproject/pages/signup_page.dart';
 
@@ -14,6 +15,7 @@ class MyApp extends StatelessWidget {
       home: Scaffold(
           // body: Signuppage()
           body: Registration()),
+      // body: QrGenerator()),
     );
   }
 }

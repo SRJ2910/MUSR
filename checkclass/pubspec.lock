@@ -301,6 +301,20 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "1.1.0"
+  syncfusion_flutter_barcodes:
+    dependency: "direct main"
+    description:
+      name: syncfusion_flutter_barcodes
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "20.4.53"
+  syncfusion_flutter_core:
+    dependency: transitive
+    description:
+      name: syncfusion_flutter_core
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "20.4.53"
   term_glyph:
     dependency: transitive
     description:
@@ -330,5 +344,5 @@ packages:
     source: hosted
     version: "2.1.2"
 sdks:
-  dart: ">=2.17.0-0 <3.0.0"
+  dart: ">=2.17.0 <3.0.0"
   flutter: ">=1.12.13+hotfix.5"
