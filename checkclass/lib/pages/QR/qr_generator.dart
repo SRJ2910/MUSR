@@ -79,7 +79,11 @@ class _QrGeneratorState extends State<QrGenerator> {
 
   Widget _qrBox() {
     return StreamBuilder(
-        stream: Firestore.instance.collection('QRcode').snapshots(),
+        stream: Firestore.instance
+            .collection('QRcode')
+            .document(widget.courseId)
+            .collection(widget.courseId)
+            .snapshots(),
         builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
           if (snapshot.hasError) {
             return Text('Error: ${snapshot.error}');
@@ -171,6 +175,21 @@ class _QrGeneratorState extends State<QrGenerator> {
     );
   }
 
+  // emptyListChecker() {
+  //   final collectionReference = Firestore.instance.collection('QRcode');
+  //   final stream = collectionReference.snapshots();
+
+  //   stream.listen((querySnapshot) {
+  //     querySnapshot.documents.forEach((documentSnapshot) {
+  //       if (documentSnapshot.exists) {
+  //         // Do something with the data
+  //         print(documentSnapshot.data);
+  //       } else
+  //         print("EMPTYYYYYYYYYYYYYYYYYY");
+  //     });
+  //   });
+  // }
+
   randomvaluegenerator() async {
     for (int i = 0; i < 2; i++) {
       String val = randomvalue();
@@ -178,6 +197,8 @@ class _QrGeneratorState extends State<QrGenerator> {
       try {
         await Firestore.instance
             .collection('QRcode')
+            .document(widget.courseId)
+            .collection(widget.courseId)
             .document(val)
             .setData({'qr': val});
       } catch (e) {

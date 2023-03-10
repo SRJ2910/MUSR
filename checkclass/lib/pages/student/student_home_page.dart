@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import "package:cloud_firestore/cloud_firestore.dart";
 import 'package:encrypt/encrypt.dart' as ency;
 import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
+import 'package:miniproject/pages/register_page.dart';
 
 import 'package:miniproject/services/authentication.dart';
 
@@ -40,6 +41,10 @@ class _StudentHomePageState extends State<StudentHomePage> {
 
   signOut() async {
     try {
+      Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (context) => Registration()),
+          (route) => false);
       await widget.auth.signOut();
       widget.logoutCallback();
     } catch (e) {
@@ -77,7 +82,7 @@ class _StudentHomePageState extends State<StudentHomePage> {
                         .listen((barcode) async {
                       print(barcode);
 
-                      // await qrCodeDecoder(barcode, "202011069");
+                      await qrCodeDecoder(barcode, "202011069");
                     }, onDone: () {
                       print("Done");
                     }, onError: (error) {
@@ -118,8 +123,11 @@ class _StudentHomePageState extends State<StudentHomePage> {
 
   validateQRcode(String code, String courseID, String batch, String date,
       String studentID) async {
-    final DocumentReference docRef =
-        _firestore.collection('QRcode').document(code);
+    final DocumentReference docRef = _firestore
+        .collection('QRcode')
+        .document(courseID)
+        .collection(courseID)
+        .document(code);
     try {
       final docSnapshot = await docRef.get();
       if (!docSnapshot.exists) {
