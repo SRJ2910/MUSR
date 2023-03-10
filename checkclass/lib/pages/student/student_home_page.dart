@@ -2,7 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import "package:cloud_firestore/cloud_firestore.dart";
 import 'package:encrypt/encrypt.dart' as ency;
-
+import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
 
 import 'package:miniproject/services/authentication.dart';
 
@@ -29,20 +29,14 @@ class _StudentHomePageState extends State<StudentHomePage> {
   //final _textEditingController = TextEditingController();
 
   //bool _isEmailVerified = false;
-  
 
-
-
-
+  final Firestore _firestore = Firestore.instance;
   @override
   void initState() {
     super.initState();
-    
 
     //_checkEmailVerification();
   }
-  
-
 
   signOut() async {
     try {
@@ -52,8 +46,6 @@ class _StudentHomePageState extends State<StudentHomePage> {
       print(e);
     }
   }
-
-
 
   @override
   Widget build(BuildContext context) {
@@ -74,94 +66,30 @@ class _StudentHomePageState extends State<StudentHomePage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: <Widget>[
-              
-              Center(
-                child: Padding(
-                  padding: const EdgeInsets.all(30.0),
-                  child: Container(
-                    padding: EdgeInsets.fromLTRB(2, 2, 2, 2),
-                    width: 400,
-                    height: 60,
-                    alignment: Alignment(100, 20),
-                    decoration: BoxDecoration(
-                      color: Colors.deepOrangeAccent,
-                      shape: BoxShape.rectangle,
-                      //borderRadius: BorderRadius.circular(15),
-                      borderRadius: BorderRadius.only(
-                          bottomRight: Radius.circular(25),
-                          topLeft: Radius.circular(25)),
-                    ),
-                    child: const Center(
-                     child: Text(
-                        'Hello Student' ,
-                        style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                            fontSize: 20),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            
+              new IconButton(
+                  onPressed: (() =>
+                      qrCodeDecoder("CS2012020580428Cry86123", "202011069")),
+                  icon: Icon(Icons.abc)),
+              TextButton(
+                  onPressed: () async {
+                    FlutterBarcodeScanner.getBarcodeStreamReceiver(
+                            "#ff6666", "Cancel", false, ScanMode.QR)
+                        .listen((barcode) async {
+                      print(barcode);
 
-              
-              Container(
-                  margin: new EdgeInsets.only(top: 40, bottom: 40),
-                  width: 320.0,
-                  height: 380.0,
-                  //alignment: Alignment(100, 20),
-                  decoration: BoxDecoration(
-                    //color: Colors.lightBlue[50],
-                    shape: BoxShape.rectangle,
-                    //borderRadius: BorderRadius.circular(25),
-                    borderRadius: BorderRadius.only(
-                        bottomRight: Radius.circular(35),
-                        topLeft: Radius.circular(35)),
-                  ),
-                  child: SingleChildScrollView(
-                    child: Column(
-                      children: <Widget>[
-                        GestureDetector(
-                          onTap: () {
-                            qrCodeScan();
-                          },
-                          child: Container(
-                            // margin: new  EdgeInsets.only(left: 10,right:10,top:10,bottom:30),
-                            padding: EdgeInsets.fromLTRB(2, 2, 2, 2),
-                            width: 200,
-                            margin: new EdgeInsets.only(top: 60, bottom: 10),
-                            height: 80,
-                            alignment: Alignment(50, 50),
-                            decoration: BoxDecoration(
-                              color: Colors.deepOrange,
-                              shape: BoxShape.rectangle,
-                              borderRadius:
-                                  BorderRadius.all(Radius.elliptical(20, 30)),
-                              //borderRadius: BorderRadius.circular(15),
-                            ),
-                            child: const Center(
-                              child: Text(
-                                '  Scan QR \n     Code',
-                                style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.white,
-                                    fontSize: 20),
-                              ),
-                            ),
-                          ),
-                        ),
-                        SizedBox(height: 200),
-                        new Text(status),
-                      ],
-                    ),
-                  )),
+                      // await qrCodeDecoder(barcode, "202011069");
+                    }, onDone: () {
+                      print("Done");
+                    }, onError: (error) {
+                      print("Error");
+                    });
+                  },
+                  child: Text("Scanner"))
             ],
           ),
         ),
       ),
     );
-    
   }
 
   Future qrCodeScan() async {
@@ -176,6 +104,69 @@ class _StudentHomePageState extends State<StudentHomePage> {
     var a = updateDatabase();
   }
 
+  qrCodeDecoder(String code, String studentID) {
+    String courseID = code.substring(0, 5);
+    String batch = code.substring(5, 9);
+    String date = "22-02-2023";
+    // DateTime.now().day.toString() +
+    //     '-' +
+    //     DateTime.now().month.toString() +
+    //     '-' +
+    //     DateTime.now().year.toString();
+    validateQRcode(code, courseID, batch, date, studentID);
+  }
+
+  validateQRcode(String code, String courseID, String batch, String date,
+      String studentID) async {
+    final DocumentReference docRef =
+        _firestore.collection('QRcode').document(code);
+    try {
+      final docSnapshot = await docRef.get();
+      if (!docSnapshot.exists) {
+        // If the document doesn't exist, create a new one
+        print("QR EXPIRED");
+      } else {
+        await docRef.delete().then((value) => print("QR DELETED"));
+        markAttendance(courseID, batch, date, studentID);
+      }
+    } catch (e) {
+      print("Error on validateQRcode()");
+      print(e);
+    }
+  }
+
+  markAttendance(
+      String courseID, String batch, String date, String studentID) async {
+    final CollectionReference _collectionRef = _firestore.collection('course');
+    final DocumentReference docRef =
+        _collectionRef.document(courseID).collection(batch).document(studentID);
+
+    try {
+      final docSnapshot = await docRef.get();
+      if (!docSnapshot.exists) {
+        // If the document doesn't exist, create a new one
+        await docRef.setData({
+          'date': [date]
+        }).then((value) => print("New document added successfully"));
+      } else {
+        // If the document exists, update it
+        await docRef.updateData({
+          'date': FieldValue.arrayUnion([date])
+        }).then((value) =>
+            print("Attendance Marked for $studentID in $courseID for $date"));
+      }
+    } catch (e) {
+      print(e);
+    }
+  }
+// Future<bool> checkIfDocumentExists(String collectionName, String docId) async {
+//   DocumentSnapshot documentSnapshot = await _firestore
+//       .collection(collectionName)
+//       .document(docId).collection(collectionPath)
+//       .get();
+
+//   return documentSnapshot.exists;
+// }
   Future<void> updateDatabase() async {
     final firestoreInstance = Firestore.instance;
     var docs = Firestore.instance.document('Users/$this.userId');
@@ -246,7 +237,6 @@ class _StudentHomePageState extends State<StudentHomePage> {
       updatedCount = data[day]['count'] + 1;
     } catch (e) {
       updatedCount = 1;
-      
     }
 
     try {

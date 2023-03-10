@@ -171,21 +171,6 @@ class _QrGeneratorState extends State<QrGenerator> {
     );
   }
 
-  // emptyListChecker() {
-  //   final collectionReference = Firestore.instance.collection('QRcode');
-  //   final stream = collectionReference.snapshots();
-
-  //   stream.listen((querySnapshot) {
-  //     querySnapshot.documents.forEach((documentSnapshot) {
-  //       if (documentSnapshot.exists) {
-  //         // Do something with the data
-  //         print(documentSnapshot.data);
-  //       } else
-  //         print("EMPTYYYYYYYYYYYYYYYYYY");
-  //     });
-  //   });
-  // }
-
   randomvaluegenerator() async {
     for (int i = 0; i < 2; i++) {
       String val = randomvalue();
