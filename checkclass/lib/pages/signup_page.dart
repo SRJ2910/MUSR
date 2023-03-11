@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:miniproject/pages/register_page.dart';
 import 'package:miniproject/services/authentication.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class Signuppage extends StatefulWidget {
   Signuppage({Key key}) : super(key: key);
@@ -12,7 +13,6 @@ class Signuppage extends StatefulWidget {
 
 class _SignuppageState extends State<Signuppage> {
   final _formKey = new GlobalKey<FormState>();
-
   String _name;
   String _email;
   String _password;
@@ -46,25 +46,33 @@ class _SignuppageState extends State<Signuppage> {
       String userId = "";
       try {
         BaseAuth auth = new Auth();
-        userId = await auth.signUp(_email, _password);
+        SharedPreferences prefs = await SharedPreferences.getInstance();
 
+        userId = await auth.signUp(_email, _password);
+        prefs.setString('userID', userId);
 //add all user to database
-        await Firestore.instance.collection('user').document(userId).setData({
+        // await Firestore.instance.collection('user').document(userId).setData({
+        //   'email': _email,
+        //   'role': _role,
+        //   'name': _name,
+        // });
+
+//add student to database
+        if (_isStudent) {
+          await Firestore.instance.collection('user').document(userId).setData({
+          'email': _email,
+          'role': _role,
+          'name': _name,
+          'batch':_batch,
+          'id':_id,
+        });
+        }
+        else{
+          await Firestore.instance.collection('user').document(userId).setData({
           'email': _email,
           'role': _role,
           'name': _name,
         });
-
-//add student to database
-        if (_isStudent) {
-          await Firestore.instance
-              .collection('student')
-              .document(_batch)
-              .setData({
-            'email': _email,
-            'name': _name,
-            'id': _id,
-          });
         }
         print("User Added Successfully");
         setState(() {

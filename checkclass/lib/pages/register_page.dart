@@ -6,6 +6,7 @@ import 'package:miniproject/pages/teacher/teach_home_page.dart';
 import 'package:miniproject/pages/teacher/teacher_root_page.dart';
 import 'package:miniproject/pages/student/student_root_page.dart';
 import 'package:miniproject/services/authentication.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class Registration extends StatefulWidget {
   State<StatefulWidget> createState() {
@@ -48,16 +49,21 @@ class _RegistrationState extends State<Registration> {
         BaseAuth auth = new Auth();
         userId = await auth.signIn(_email, _password);
 
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+        prefs.setString('userID', userId);
+
         var result =
             await Firestore.instance.collection('user').document(userId).get();
         print(result['role']);
         if (result['role'] == "Student") {
+          await fetchStudentData(userId);
           Navigator.pushAndRemoveUntil(
               context,
               MaterialPageRoute(builder: (context) => StudentHomePage()),
               (route) => false);
         }
         if (result['role'] == "Teacher") {
+          await fetchTeacherData(userId);
           Navigator.pushAndRemoveUntil(
               context,
               MaterialPageRoute(builder: (context) => TeacherHomePage()),
@@ -86,16 +92,67 @@ class _RegistrationState extends State<Registration> {
     }
   }
 
+  void fetchStudentData(String userID) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await Firestore.instance
+        .collection('user')
+        .document(userID)
+        .get()
+        .then((DocumentSnapshot documentSnapshot) {
+      if (documentSnapshot.exists) {
+        prefs.setString('name', documentSnapshot.data['name']);
+        prefs.setString('email', documentSnapshot.data['email']);
+        prefs.setString('id', documentSnapshot.data['id']);
+        prefs.setString('batch', documentSnapshot.data['batch']);
+      } else {
+        print("User Doesn't Exist");
+      }
+    });
+  }
+
+  void fetchTeacherData(String userID) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await Firestore.instance
+        .collection('user')
+        .document(userID)
+        .get()
+        .then((DocumentSnapshot documentSnapshot) {
+      if (documentSnapshot.exists) {
+        prefs.setString('name', documentSnapshot.data['name']);
+        prefs.setString('email', documentSnapshot.data['email']);
+      } else {
+        print("User Doesn't Exist");
+      }
+    });
+  }
+
   @override
   void initState() {
     _errorMessage = "";
     _isLoading = false;
+    // checkUser();
     super.initState();
   }
 
   void resetForm() {
     _formKey.currentState.reset();
     _errorMessage = "";
+  }
+
+  checkUser() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String userID = prefs.getString('userID');
+    final DocumentReference docRef =
+        Firestore.instance.collection('user').document(userID);
+
+    try {
+      final docSnapshot = await docRef.get();
+      if (!docSnapshot.exists) {
+        print("User Doesn't Exist");
+      } else {
+        await docRef.get();
+      }
+    } catch (e) {}
   }
 
   @override

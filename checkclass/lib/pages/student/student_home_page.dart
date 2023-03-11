@@ -8,6 +8,7 @@ import 'package:miniproject/pages/register_page.dart';
 import 'package:miniproject/services/authentication.dart';
 
 import 'package:qrscan/qrscan.dart' as scanner;
+import 'package:shared_preferences/shared_preferences.dart';
 
 class StudentHomePage extends StatefulWidget {
   StudentHomePage({Key key, this.auth, this.userId, this.logoutCallback})
@@ -26,7 +27,8 @@ class _StudentHomePageState extends State<StudentHomePage> {
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
   String barcode = "";
   String status = "";
-
+  String id = "";
+  String name = "";
   //final _textEditingController = TextEditingController();
 
   //bool _isEmailVerified = false;
@@ -35,11 +37,22 @@ class _StudentHomePageState extends State<StudentHomePage> {
   @override
   void initState() {
     super.initState();
-
+    getCachedData();
     //_checkEmailVerification();
   }
 
+  getCachedData() {
+    SharedPreferences.getInstance().then((prefs) {
+      setState(() {
+        id = prefs.getString('id');
+        name = prefs.getString('name');
+      });
+    });
+  }
+
   signOut() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    prefs.clear();
     try {
       Navigator.pushAndRemoveUntil(
           context,
@@ -71,10 +84,12 @@ class _StudentHomePageState extends State<StudentHomePage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: <Widget>[
-              new IconButton(
-                  onPressed: (() =>
-                      qrCodeDecoder("CS2012020580428Cry86123", "202011069")),
-                  icon: Icon(Icons.abc)),
+              Text(id),
+              Text(name),
+              // new IconButton(
+              //     onPressed: (() =>
+              //         qrCodeDecoder("CS2012020580428Cry86123", "202011069")),
+              //     icon: Icon(Icons.abc)),
               TextButton(
                   onPressed: () async {
                     FlutterBarcodeScanner.getBarcodeStreamReceiver(
@@ -82,7 +97,7 @@ class _StudentHomePageState extends State<StudentHomePage> {
                         .listen((barcode) async {
                       print(barcode);
 
-                      await qrCodeDecoder(barcode, "202011069");
+                      await qrCodeDecoder(barcode, id);
                     }, onDone: () {
                       print("Done");
                     }, onError: (error) {
@@ -112,12 +127,13 @@ class _StudentHomePageState extends State<StudentHomePage> {
   qrCodeDecoder(String code, String studentID) {
     String courseID = code.substring(0, 5);
     String batch = code.substring(5, 9);
-    String date = "22-02-2023";
-    // DateTime.now().day.toString() +
-    //     '-' +
-    //     DateTime.now().month.toString() +
-    //     '-' +
-    //     DateTime.now().year.toString();
+    String date =
+        // "22-02-2023";
+        DateTime.now().day.toString() +
+            '-' +
+            DateTime.now().month.toString() +
+            '-' +
+            DateTime.now().year.toString();
     validateQRcode(code, courseID, batch, date, studentID);
   }
 

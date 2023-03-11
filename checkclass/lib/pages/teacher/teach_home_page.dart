@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:miniproject/pages/register_page.dart';
 import 'package:miniproject/services/authentication.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 /*import 'package:qr_flutter/qr_flutter.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';*/
@@ -24,8 +25,25 @@ class TeacherHomePage extends StatefulWidget {
 
 class _TeacherHomePageState extends State<TeacherHomePage> {
   //final FirebaseDatabase _database = FirebaseDatabase.instance;
+  String name = "";
+
+  @override
+  void initState() {
+    super.initState();
+    getCachedData();
+  }
+
+  getCachedData() {
+    SharedPreferences.getInstance().then((prefs) {
+      setState(() {
+        name = prefs.getString('name');
+      });
+    });
+  }
 
   signOut() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    prefs.clear();
     try {
       Navigator.pushAndRemoveUntil(
           context,
@@ -55,9 +73,9 @@ class _TeacherHomePageState extends State<TeacherHomePage> {
               ],
             ),
             title: Text(
-              'Welcome',
+              'Smart Attendance',
               style: TextStyle(
-                  fontSize: 25,
+                  fontSize: 20,
                   color: Colors.white,
                   fontWeight: FontWeight.bold),
             ),
