@@ -134,7 +134,11 @@ class _StudentHomePageState extends State<StudentHomePage> {
             DateTime.now().month.toString() +
             '-' +
             DateTime.now().year.toString();
-    validateQRcode(code, courseID, batch, date, studentID);
+    String id_batch = studentID.substring(0, 4);
+    if (id_batch == batch)
+      validateQRcode(code, courseID, batch, date, studentID);
+    else
+      print("Batch Mismatch");
   }
 
   validateQRcode(String code, String courseID, String batch, String date,
