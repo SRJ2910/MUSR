@@ -19,9 +19,9 @@ environment:
 dependencies:
   firebase_auth: ^0.14.0+5
   firebase_database: ^3.0.7
-  cloud_firestore: ^0.13.4+2
-  qr_flutter: ^3.2.0
-  encrypt: ^4.0.0
+  cloud_firestore: any
+  # qr_flutter: ^3.2.0
+  # encrypt: ^4.0.0
   flutter:
     sdk: flutter 
 
@@ -33,6 +33,10 @@ dependencies:
   syncfusion_flutter_barcodes: ^20.4.53
   flutter_barcode_scanner: ^2.0.0
   shared_preferences: ^2.0.18
+  syncfusion_flutter_xlsio: ^20.4.53-beta
+  path_provider: ^2.0.13
+  open_file: ^3.2.1
+  intl: ^0.18.0
 
 dev_dependencies:
   flutter_test:

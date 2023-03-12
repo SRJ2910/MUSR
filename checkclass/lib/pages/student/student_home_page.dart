@@ -1,7 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import "package:cloud_firestore/cloud_firestore.dart";
-import 'package:encrypt/encrypt.dart' as ency;
 import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
 import 'package:miniproject/pages/register_page.dart';
 
@@ -112,17 +111,17 @@ class _StudentHomePageState extends State<StudentHomePage> {
     );
   }
 
-  Future qrCodeScan() async {
-    String barcode = await scanner.scan();
-    final key = ency.Key.fromUtf8('JingalalahuhuJingalalahuhuJingal');
-    final iv = ency.IV.fromLength(16);
-    final encrypter = ency.Encrypter(ency.AES(key));
-    final decryptedQR =
-        encrypter.decrypt(ency.Encrypted.from64(barcode), iv: iv);
-    print('BARCODE' + decryptedQR);
-    setState(() => this.barcode = decryptedQR);
-    var a = updateDatabase();
-  }
+  // Future qrCodeScan() async {
+  //   String barcode = await scanner.scan();
+  //   final key = ency.Key.fromUtf8('JingalalahuhuJingalalahuhuJingal');
+  //   final iv = ency.IV.fromLength(16);
+  //   final encrypter = ency.Encrypter(ency.AES(key));
+  //   final decryptedQR =
+  //       encrypter.decrypt(ency.Encrypted.from64(barcode), iv: iv);
+  //   print('BARCODE' + decryptedQR);
+  //   setState(() => this.barcode = decryptedQR);
+  //   var a = updateDatabase();
+  // }
 
   qrCodeDecoder(String code, String studentID) {
     String courseID = code.substring(0, 5);

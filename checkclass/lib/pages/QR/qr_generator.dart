@@ -22,7 +22,7 @@ class _QrGeneratorState extends State<QrGenerator> {
   @override
   void initState() {
     randomvaluegenerator();
-
+    classTaken();
     super.initState();
   }
 
@@ -189,6 +189,39 @@ class _QrGeneratorState extends State<QrGenerator> {
   //     });
   //   });
   // }
+  classTaken() async {
+    final DocumentReference docRef = Firestore.instance
+        .collection('course')
+        .document(widget.courseId)
+        .collection(widget.batch)
+        .document('classtaken');
+
+    String date =
+        // "22-02-2023";
+        DateTime.now().day.toString() +
+            '-' +
+            DateTime.now().month.toString() +
+            '-' +
+            DateTime.now().year.toString();
+
+    try {
+      final docSnapshot = await docRef.get();
+      if (!docSnapshot.exists) {
+        // If the document doesn't exist, create a new one
+        await docRef.setData({
+          'date': [date]
+        }).then((value) => print("New document added successfully"));
+      } else {
+        // If the document exists, update it
+        await docRef.updateData({
+          'date': FieldValue.arrayUnion([date])
+        }).then((value) =>
+            print("$date added to the existing document successfully"));
+      }
+    } catch (e) {
+      print(e.toString());
+    }
+  }
 
   randomvaluegenerator() async {
     for (int i = 0; i < 2; i++) {

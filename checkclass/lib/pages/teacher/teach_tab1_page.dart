@@ -3,9 +3,6 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:miniproject/pages/QR/qr_generator.dart';
 import 'package:miniproject/services/authentication.dart';
-import 'package:encrypt/encrypt.dart' as ency;
-
-import 'package:qr_flutter/qr_flutter.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class TeacherBasicPage extends StatefulWidget {
@@ -435,202 +432,202 @@ class _TeacherBasicPageState extends State<TeacherBasicPage> {
     );
   }
 
-  Future<void> showCustomDialogWithImage(BuildContext context) async {
-    if (validateAndSave()) {
-      //print(userId);
-      var firebaseUser = await FirebaseAuth.instance.currentUser();
-      String qrData = classname +
-          '/' +
-          date +
-          '/' +
-          check +
-          '/' +
-          secretcode +
-          '/' +
-          firebaseUser.uid;
+  // Future<void> showCustomDialogWithImage(BuildContext context) async {
+  //   if (validateAndSave()) {
+  //     //print(userId);
+  //     var firebaseUser = await FirebaseAuth.instance.currentUser();
+  //     String qrData = classname +
+  //         '/' +
+  //         date +
+  //         '/' +
+  //         check +
+  //         '/' +
+  //         secretcode +
+  //         '/' +
+  //         firebaseUser.uid;
 
-      final key = ency.Key.fromUtf8('JingalalahuhuJingalalahuhuJingal');
-      final iv = ency.IV.fromLength(16);
-      final encrypter = ency.Encrypter(ency.AES(key));
-      final encryptedQR = encrypter.encrypt(qrData, iv: iv);
-      final decryptedQR =
-          encrypter.decrypt(encryptedQR, iv: iv); //used in student's home page
+  //     final key = ency.Key.fromUtf8('JingalalahuhuJingalalahuhuJingal');
+  //     final iv = ency.IV.fromLength(16);
+  //     final encrypter = ency.Encrypter(ency.AES(key));
+  //     final encryptedQR = encrypter.encrypt(qrData, iv: iv);
+  //     final decryptedQR =
+  //         encrypter.decrypt(encryptedQR, iv: iv); //used in student's home page
 
-      print(qrData);
-      print(encryptedQR.base64);
-      print(decryptedQR);
-      print(encryptedQR.base64);
+  //     print(qrData);
+  //     print(encryptedQR.base64);
+  //     print(decryptedQR);
+  //     print(encryptedQR.base64);
 
-      Dialog dialogWithImage = Dialog(
-        child: Container(
-          height: 330.0,
-          width: 300.0,
-          child: Column(
-            children: <Widget>[
-              Padding(
-                padding: const EdgeInsets.only(top: 20.0, bottom: 10.0),
-                child: Container(
-                  height: 200,
-                  width: 300,
-                  child: Center(
-                    child: QrImage(
-                      data: encryptedQR.base64,
-                      version: QrVersions.auto,
-                      size: 200.0,
-                    ),
-                  ),
-                ),
-              ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: <Widget>[
-                  RaisedButton(
-                    color: Colors.blue,
-                    onPressed: () {
-                      saveTheForm(qrData);
-                    },
-                    child: Text(
-                      'Save',
-                      style: TextStyle(fontSize: 18.0, color: Colors.white),
-                    ),
-                  ),
-                  SizedBox(
-                    width: 20,
-                  ),
-                  RaisedButton(
-                    color: Colors.blue,
-                    onPressed: () {
-                      setState(() {
-                        saveMessage =
-                            'Click save to update or cancel to reject';
-                      });
-                      Navigator.of(context, rootNavigator: true).pop();
-                    },
-                    child: Text(
-                      'Cancel',
-                      style: TextStyle(fontSize: 18.0, color: Colors.white),
-                    ),
-                  ),
-                ],
-              ),
-              SizedBox(
-                height: 10,
-              ),
-              Text(saveMessage)
-            ],
-          ),
-        ),
-      );
-      showDialog(
-          context: context,
-          builder: (BuildContext context) => dialogWithImage,
-          barrierDismissible: false);
-    }
-  }
+  //     Dialog dialogWithImage = Dialog(
+  //       child: Container(
+  //         height: 330.0,
+  //         width: 300.0,
+  //         child: Column(
+  //           children: <Widget>[
+  //             Padding(
+  //               padding: const EdgeInsets.only(top: 20.0, bottom: 10.0),
+  //               child: Container(
+  //                 height: 200,
+  //                 width: 300,
+  //                 child: Center(
+  //                   child: QrImage(
+  //                     data: encryptedQR.base64,
+  //                     version: QrVersions.auto,
+  //                     size: 200.0,
+  //                   ),
+  //                 ),
+  //               ),
+  //             ),
+  //             Row(
+  //               mainAxisAlignment: MainAxisAlignment.center,
+  //               children: <Widget>[
+  //                 RaisedButton(
+  //                   color: Colors.blue,
+  //                   onPressed: () {
+  //                     saveTheForm(qrData);
+  //                   },
+  //                   child: Text(
+  //                     'Save',
+  //                     style: TextStyle(fontSize: 18.0, color: Colors.white),
+  //                   ),
+  //                 ),
+  //                 SizedBox(
+  //                   width: 20,
+  //                 ),
+  //                 RaisedButton(
+  //                   color: Colors.blue,
+  //                   onPressed: () {
+  //                     setState(() {
+  //                       saveMessage =
+  //                           'Click save to update or cancel to reject';
+  //                     });
+  //                     Navigator.of(context, rootNavigator: true).pop();
+  //                   },
+  //                   child: Text(
+  //                     'Cancel',
+  //                     style: TextStyle(fontSize: 18.0, color: Colors.white),
+  //                   ),
+  //                 ),
+  //               ],
+  //             ),
+  //             SizedBox(
+  //               height: 10,
+  //             ),
+  //             Text(saveMessage)
+  //           ],
+  //         ),
+  //       ),
+  //     );
+  //     showDialog(
+  //         context: context,
+  //         builder: (BuildContext context) => dialogWithImage,
+  //         barrierDismissible: false);
+  //   }
+  // }
 
-  void showCustomDialog(BuildContext context, String msg, String msg1) {
-    AlertDialog dialogWithImage = AlertDialog(
-      title: Text(msg1),
-      content: Text(msg),
-      actions: <Widget>[
-        FlatButton(
-          onPressed: () {
-            Navigator.of(context, rootNavigator: true).pop();
-          },
-          child:
-              Text('OK', style: TextStyle(fontSize: 18.0, color: Colors.blue)),
-        ),
-      ],
-      elevation: 24.0,
-    );
-    showDialog(
-        context: context,
-        builder: (BuildContext context) => dialogWithImage,
-        barrierDismissible: false);
-  }
+  // void showCustomDialog(BuildContext context, String msg, String msg1) {
+  //   AlertDialog dialogWithImage = AlertDialog(
+  //     title: Text(msg1),
+  //     content: Text(msg),
+  //     actions: <Widget>[
+  //       FlatButton(
+  //         onPressed: () {
+  //           Navigator.of(context, rootNavigator: true).pop();
+  //         },
+  //         child:
+  //             Text('OK', style: TextStyle(fontSize: 18.0, color: Colors.blue)),
+  //       ),
+  //     ],
+  //     elevation: 24.0,
+  //   );
+  //   showDialog(
+  //       context: context,
+  //       builder: (BuildContext context) => dialogWithImage,
+  //       barrierDismissible: false);
+  // }
 
-  Future<void> saveTheForm(String qrData) async {
-    final firestoreInstance = Firestore.instance;
-    var qrDetails = qrData.split('/');
-    var classname = qrDetails[0];
-    var dates = qrDetails[1].split('.');
-    var day = dates[0];
-    var date = dates[1] + '.' + dates[2];
-    var secretCode = qrDetails[3];
-    var exists = 0;
-    var codeExists = 0;
-    var updatedData = [];
-    //print(docs);
-    var firebaseUser = await FirebaseAuth.instance.currentUser();
+  // Future<void> saveTheForm(String qrData) async {
+  //   final firestoreInstance = Firestore.instance;
+  //   var qrDetails = qrData.split('/');
+  //   var classname = qrDetails[0];
+  //   var dates = qrDetails[1].split('.');
+  //   var day = dates[0];
+  //   var date = dates[1] + '.' + dates[2];
+  //   var secretCode = qrDetails[3];
+  //   var exists = 0;
+  //   var codeExists = 0;
+  //   var updatedData = [];
+  //   //print(docs);
+  //   var firebaseUser = await FirebaseAuth.instance.currentUser();
 
-    final CollectionReference monthsRef = Firestore.instance
-        .collection('users')
-        .document(firebaseUser.uid)
-        .collection(classname);
+  //   final CollectionReference monthsRef = Firestore.instance
+  //       .collection('users')
+  //       .document(firebaseUser.uid)
+  //       .collection(classname);
 
-    var monthsDocs = await Firestore.instance
-        .collection("users")
-        .document(firebaseUser.uid)
-        .collection(classname)
-        .getDocuments();
+  //   var monthsDocs = await Firestore.instance
+  //       .collection("users")
+  //       .document(firebaseUser.uid)
+  //       .collection(classname)
+  //       .getDocuments();
 
-    var months = monthsDocs.documents;
+  //   var months = monthsDocs.documents;
 
-    for (int i = 0; i < months.length; i++)
-      if (date == months[i].documentID) {
-        exists = 1;
-        break;
-      }
+  //   for (int i = 0; i < months.length; i++)
+  //     if (date == months[i].documentID) {
+  //       exists = 1;
+  //       break;
+  //     }
 
-    if (exists == 0) await monthsRef.document(date).setData({});
+  //   if (exists == 0) await monthsRef.document(date).setData({});
 
-    var data = await Firestore.instance
-        .collection("users")
-        .document(firebaseUser.uid)
-        .collection(classname)
-        .document(date)
-        .get();
+  //   var data = await Firestore.instance
+  //       .collection("users")
+  //       .document(firebaseUser.uid)
+  //       .collection(classname)
+  //       .document(date)
+  //       .get();
 
-    //print(data[day]['codes'][0]);
+  //   //print(data[day]['codes'][0]);
 
-    try {
-      for (int i = 0; i < data[day]['codes'].length; i++)
-        if (data[day]['codes'][i] == secretCode) {
-          codeExists = 1;
-          break;
-        }
-    } catch (e) {
-      print("Caught");
-    }
+  //   try {
+  //     for (int i = 0; i < data[day]['codes'].length; i++)
+  //       if (data[day]['codes'][i] == secretCode) {
+  //         codeExists = 1;
+  //         break;
+  //       }
+  //   } catch (e) {
+  //     print("Caught");
+  //   }
 
-    print(codeExists);
-    if (codeExists == 1) {
-      Navigator.of(context, rootNavigator: true).pop();
-      showCustomDialog(
-          context, 'Secret code already exists.Please enter a new one', 'Oops');
-    } else {
-      try {
-        updatedData = data[day]['codes'] + [secretCode];
-      } catch (e) {
-        updatedData = [secretCode];
-      }
+  //   print(codeExists);
+  //   if (codeExists == 1) {
+  //     Navigator.of(context, rootNavigator: true).pop();
+  //     showCustomDialog(
+  //         context, 'Secret code already exists.Please enter a new one', 'Oops');
+  //   } else {
+  //     try {
+  //       updatedData = data[day]['codes'] + [secretCode];
+  //     } catch (e) {
+  //       updatedData = [secretCode];
+  //     }
 
-      try {
-        firestoreInstance
-            .collection("users")
-            .document(firebaseUser.uid)
-            .collection(classname)
-            .document(date)
-            .updateData({
-          "$day.codes": updatedData,
-        });
-        // Navigator.of(context, rootNavigator: true).pop();
-        showCustomDialog(
-            context, 'QR Saved and ready to be scanned', 'Success');
-      } catch (e) {
-        showCustomDialog(context, 'Update Failed,Please try again', 'Error');
-        print(e.toString());
-      }
-    }
-  }
+  //     try {
+  //       firestoreInstance
+  //           .collection("users")
+  //           .document(firebaseUser.uid)
+  //           .collection(classname)
+  //           .document(date)
+  //           .updateData({
+  //         "$day.codes": updatedData,
+  //       });
+  //       // Navigator.of(context, rootNavigator: true).pop();
+  //       showCustomDialog(
+  //           context, 'QR Saved and ready to be scanned', 'Success');
+  //     } catch (e) {
+  //       showCustomDialog(context, 'Update Failed,Please try again', 'Error');
+  //       print(e.toString());
+  //     }
+  //   }
+  // }
 }
