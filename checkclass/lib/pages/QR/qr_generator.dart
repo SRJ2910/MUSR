@@ -1,3 +1,4 @@
+import 'dart:collection';
 import 'dart:math';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -22,7 +23,7 @@ class _QrGeneratorState extends State<QrGenerator> {
   @override
   void initState() {
     randomvaluegenerator();
-    classTaken();
+    clearcurrentattandance();
     super.initState();
   }
 
@@ -39,17 +40,22 @@ class _QrGeneratorState extends State<QrGenerator> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.pink,
-        title: Text('QR Generator'),
+        title: Text(
+          "${widget.courseId}",
+          overflow: TextOverflow.visible,
+          softWrap: true,
+        ),
       ),
       body: SingleChildScrollView(
         child: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: <Widget>[
-              _textBox(widget.courseName, widget.courseId),
+              // _textBox(widget.courseName, widget.courseId),
               _qrBox(),
               // submitButton(),
-              _presenceBox(_participants)
+              // _presenceBox(_participants)
+              _presentBox()
             ],
           ),
         ),
@@ -105,7 +111,7 @@ class _QrGeneratorState extends State<QrGenerator> {
               margin: EdgeInsets.all(10.0),
               child: Center(
                   child: SfBarcodeGenerator(
-                showValue: true,
+                // showValue: true,
                 value: curr,
                 symbology: QRCode(),
               )),
@@ -114,28 +120,135 @@ class _QrGeneratorState extends State<QrGenerator> {
         });
   }
 
-  Widget submitButton() {
-    return GestureDetector(
-      child: Container(
-        // height: 50,
-        // width: 200,
-        decoration: BoxDecoration(
-          shape: BoxShape.rectangle,
-          color: Colors.pink,
-        ),
-        // margin: EdgeInsets.all(10.0),
-        child: Center(
-            child: Text('Submit',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 18.0,
-                ))),
-      ),
-      onTap: () {
-        setState(() {
-          globalIndex++;
-        });
+  List<String> present_student_ID = [];
+  List<String> present_student_Name = [];
+  Widget _presentBox() {
+    return StreamBuilder(
+      stream: Firestore.instance
+          .collection('course')
+          .document(widget.courseId)
+          .collection(widget.batch)
+          .document('classtaken')
+          .snapshots(),
+      builder: (BuildContext context, AsyncSnapshot snapshot) {
+        if (snapshot.hasError) {
+          return Text('Error: ${snapshot.error}');
+        } else if (!snapshot.hasData) {
+          return CircularProgressIndicator();
+        } else if (snapshot.hasData) {
+          try {
+            Map<dynamic, dynamic> data = snapshot.data['currentAttendance'];
+            SplayTreeMap<dynamic, dynamic> sortedMap =
+                SplayTreeMap<dynamic, dynamic>.from(data);
+            present_student_ID =
+                sortedMap.keys.map((element) => element.toString()).toList();
+            present_student_Name =
+                sortedMap.values.map((element) => element.toString()).toList();
+          } catch (e) {
+            print("NO Data");
+          }
+
+          // print(present_student_ID);
+          // print(present_student_Name);
+        }
+
+        return Column(
+          children: [
+            Align(
+              child: Padding(
+                padding: const EdgeInsets.only(right: 10, left: 10),
+                child: Container(
+                  margin: EdgeInsets.symmetric(horizontal: 5),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Row(
+                        children: [
+                          Text("Batch : "),
+                          Text(
+                            widget.batch,
+                            textScaleFactor: 1.5,
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                        ],
+                      ),
+                      Row(
+                        children: [
+                          Text("Total : "),
+                          Text(
+                            present_student_ID.length.toString(),
+                            textScaleFactor: 1.5,
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                  decoration: BoxDecoration(
+                      // color: Colors.pinkAccent,
+                      borderRadius: BorderRadius.all(Radius.circular(20))),
+                ),
+              ),
+              alignment: Alignment.centerRight,
+            ),
+            Padding(
+              padding: const EdgeInsets.only(top: 10),
+              child: Container(
+                height: 250,
+                child: ListView.builder(
+                  itemCount: present_student_ID.length,
+                  itemBuilder: (BuildContext context, int index) {
+                    return ListTile(
+                      // focusColor: Colors.amber,
+                      iconColor: Colors.black,
+                      leading: Icon(Icons.person),
+                      title: Text(present_student_Name[index]),
+                      subtitle: Text(present_student_ID[index]),
+                      trailing: Icon(
+                        Icons.check,
+                        color: Colors.green,
+                      ),
+                      onTap: () {},
+                    );
+                  },
+                ),
+              ),
+            ),
+          ],
+        );
+        // return Column(
+        //   children: [
+        //     Text(widget.batch),
+        //     Container(
+        //       height: MediaQuery.of(context).size.height - 600,
+        //       width: MediaQuery.of(context).size.width - 25,
+        //       decoration: BoxDecoration(
+        //         color: Colors.green,
+        //       ),
+        //       margin: EdgeInsets.all(10.0),
+        //       child: GridView.count(
+        //         crossAxisCount: 5,
+        //         children: List.generate(present_student_ID.length, (index) {
+        //           return Container(
+        //             decoration: BoxDecoration(
+        //               shape: BoxShape.rectangle,
+        //               color: Colors.white,
+        //               borderRadius: BorderRadius.circular(10),
+        //             ),
+        //             margin:
+        //                 EdgeInsets.only(top: 10, bottom: 10, left: 5, right: 5),
+        //             child: Center(
+        //               child: Text(
+        //                 '${present_student_ID[index]}',
+        //                 style: TextStyle(fontSize: 10),
+        //               ),
+        //             ),
+        //           );
+        //         }), // Enable gridlines
+        //       ),
+        //     ),
+        //   ],
+        // );
       },
     );
   }
@@ -246,5 +359,32 @@ class _QrGeneratorState extends State<QrGenerator> {
         Random().nextInt(999999).toString() +
         widget.courseName.substring(0, 3) +
         Random().nextInt(999999).toString();
+  }
+
+  clearcurrentattandance() async {
+    final DocumentReference docRef = Firestore.instance
+        .collection('course')
+        .document(widget.courseId)
+        .collection(widget.batch)
+        .document('classtaken');
+
+    try {
+      final docSnapshot = await docRef.get();
+      if (!docSnapshot.exists) {
+        // If the document doesn't exist, create a new one
+        print("already deleted");
+      } else {
+        // If the document exists, update it
+        final updateData = {'currentAttendance': FieldValue.delete()};
+        docRef
+            .updateData(updateData)
+            .then((value) => print('Field deleted successfully'))
+            .catchError((error) => print('Failed to delete field: $error'));
+      }
+
+      classTaken();
+    } catch (e) {
+      print(e.toString());
+    }
   }
 }

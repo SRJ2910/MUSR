@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import "package:cloud_firestore/cloud_firestore.dart";
 import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
 import 'package:miniproject/pages/register_page.dart';
+import 'package:miniproject/pages/teacher/teach_tab1_page.dart';
+import 'package:miniproject/pages/teacher/teach_tab2_page.dart';
 
 import 'package:miniproject/services/authentication.dart';
 
@@ -67,61 +69,153 @@ class _StudentHomePageState extends State<StudentHomePage> {
   @override
   Widget build(BuildContext context) {
     return new WillPopScope(
-      onWillPop: () async => false,
-      child: new Scaffold(
-        appBar: new AppBar(
-          title: new Text('Smart Attendance'),
-          backgroundColor: Colors.deepOrange,
-          actions: <Widget>[
-            new FlatButton(
-                child: new Text('Logout',
-                    style: new TextStyle(fontSize: 20.0, color: Colors.white)),
-                onPressed: signOut)
-          ],
-        ),
-        body: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: <Widget>[
-              Text(id),
-              Text(name),
-              // new IconButton(
-              //     onPressed: (() =>
-              //         qrCodeDecoder("CS2012020580428Cry86123", "202011069")),
-              //     icon: Icon(Icons.abc)),
-              TextButton(
-                  onPressed: () async {
-                    FlutterBarcodeScanner.getBarcodeStreamReceiver(
-                            "#ff6666", "Cancel", false, ScanMode.QR)
-                        .listen((barcode) async {
-                      print(barcode);
-
-                      await qrCodeDecoder(barcode, id);
-                    }, onDone: () {
-                      print("Done");
-                    }, onError: (error) {
-                      print("Error");
-                    });
-                  },
-                  child: Text("Scanner"))
-            ],
+        onWillPop: () async => false,
+        child: MaterialApp(
+          debugShowCheckedModeBanner: false,
+          home: DefaultTabController(
+            length: 2,
+            child: new Scaffold(
+              appBar: new AppBar(
+                title: new Text('Student Portal'),
+                backgroundColor: Colors.pink,
+                actions: [
+                  IconButton(
+                    icon: Icon(Icons.logout),
+                    onPressed: signOut,
+                  ),
+                ],
+                bottom: TabBar(
+                  indicatorColor: Colors.white,
+                  tabs: [
+                    Tab(
+                      icon: Icon(Icons.qr_code_scanner),
+                      text: "Scan QR Code",
+                    ),
+                    Tab(icon: Icon(Icons.book), text: "View Records"),
+                  ],
+                ),
+              ),
+              body: TabBarView(
+                children: [
+                  ScannerButton(),
+                  TeacherBasicSecPage(),
+                ],
+              ),
+              // Center(
+              //   child: Column(
+              //     mainAxisAlignment: MainAxisAlignment.center,
+              //     children: [
+              //       // ScannerButton(),
+              //       detail(),
+              //     ],
+              //   ),
+              // ),
+            ),
           ),
+        ));
+  }
+
+  Widget detail() {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(10),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.pink.withOpacity(0.5),
+            spreadRadius: 5,
+            blurRadius: 7,
+            offset: Offset(0, 3), // changes position of shadow
+          ),
+        ],
+      ),
+      child: Container(
+        height: 150,
+        width: 125,
+        child: Column(
+          children: [
+            // Text("Name: " + name),
+            // Text("ID: " + id),
+          ],
         ),
       ),
     );
   }
 
-  // Future qrCodeScan() async {
-  //   String barcode = await scanner.scan();
-  //   final key = ency.Key.fromUtf8('JingalalahuhuJingalalahuhuJingal');
-  //   final iv = ency.IV.fromLength(16);
-  //   final encrypter = ency.Encrypter(ency.AES(key));
-  //   final decryptedQR =
-  //       encrypter.decrypt(ency.Encrypted.from64(barcode), iv: iv);
-  //   print('BARCODE' + decryptedQR);
-  //   setState(() => this.barcode = decryptedQR);
-  //   var a = updateDatabase();
-  // }
+  scannnn() {
+    FlutterBarcodeScanner.getBarcodeStreamReceiver(
+            "#ff6666", "Cancel", false, ScanMode.QR)
+        .listen((barcode) async {
+      print(barcode);
+
+      await qrCodeDecoder(barcode, id);
+    });
+  }
+
+  Widget ScannerButton() {
+    return IconButton(
+        // splashColor: Colors.red,
+        iconSize: 100,
+        onPressed: () async {
+          FlutterBarcodeScanner.getBarcodeStreamReceiver(
+                  "#ff6666", "Cancel", false, ScanMode.QR)
+              .listen((barcode) async {
+            print(barcode);
+            try {
+              await qrCodeDecoder(barcode, id);
+            } catch (e) {
+              print(e);
+              if (e.toString() == "Exception: Batch Mismatch") {
+                print("object");
+                showDialog(
+                  context: context,
+                  builder: (BuildContext context) {
+                    return AlertDialog(
+                      title: Text("Error"),
+                      content: Text("Batch Mismatch"),
+                      actions: [
+                        TextButton(
+                          child: Text("Close"),
+                          onPressed: () {
+                            Navigator.of(context).pop();
+                          },
+                        ),
+                      ],
+                    );
+                  },
+                );
+              }
+            }
+          });
+        },
+        icon: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(10),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.pink.withOpacity(0.2),
+                    spreadRadius: 5,
+                    blurRadius: 7,
+                    offset: Offset(0, 3), // changes position of shadow
+                  ),
+                ],
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(10.0),
+                child: Icon(Icons.qr_code_scanner_rounded),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(10.0),
+              child: Text("Tap to Scan"),
+            )
+          ],
+        ));
+  }
 
   qrCodeDecoder(String code, String studentID) {
     String courseID = code.substring(0, 5);
@@ -136,8 +230,9 @@ class _StudentHomePageState extends State<StudentHomePage> {
     String id_batch = studentID.substring(0, 4);
     if (id_batch == batch)
       validateQRcode(code, courseID, batch, date, studentID);
-    else
-      print("Batch Mismatch");
+    else {
+      throw Exception("Batch Mismatch");
+    }
   }
 
   validateQRcode(String code, String courseID, String batch, String date,
@@ -153,13 +248,64 @@ class _StudentHomePageState extends State<StudentHomePage> {
         // If the document doesn't exist, create a new one
         print("QR EXPIRED");
       } else {
-        await docRef.delete().then((value) => print("QR DELETED"));
-        markAttendance(courseID, batch, date, studentID);
+        if (await checkattendancemarked(courseID, batch, date, studentID)) {
+          await addcurrentattendance(courseID, batch, date, studentID);
+          await docRef.delete().then((value) => print("QR DELETED"));
+          markAttendance(courseID, batch, date, studentID);
+        } else
+          throw Exception("Attendance Already Marked");
       }
     } catch (e) {
       print("Error on validateQRcode()");
       print(e);
     }
+  }
+
+  checkattendancemarked(
+      String courseID, String batch, String date, String studentID) async {
+    final DocumentReference docRef = _firestore
+        .collection('course')
+        .document(courseID)
+        .collection(batch)
+        .document('classtaken');
+    try {
+      final docSnapshot = await docRef.get();
+      Map<String, dynamic> data = docSnapshot.data;
+      print(data);
+      if (!data.containsKey('currentAttendance')) {
+        return true;
+      } else {
+        Map<String, dynamic> attendance = data['currentAttendance'];
+
+        if (attendance.containsKey(studentID)) {
+          print("Attendance Already Marked");
+          return false;
+        } else {
+          return true;
+        }
+      }
+    } catch (e) {
+      print(e);
+    }
+  }
+
+  addcurrentattendance(
+      String courseID, String batch, String date, String studentID) async {
+    final DocumentReference docRef = _firestore
+        .collection('course')
+        .document(courseID)
+        .collection(batch)
+        .document('classtaken');
+
+    final newData = {
+      'currentAttendance': {studentID: name}
+    };
+    docRef
+        .setData(newData, merge: true)
+        .then((value) => print(
+            'currentAttendence field added successfully without deleting other fields'))
+        .catchError(
+            (error) => print('Failed to add currentAttendence field: $error'));
   }
 
   markAttendance(
@@ -186,14 +332,7 @@ class _StudentHomePageState extends State<StudentHomePage> {
       print(e);
     }
   }
-// Future<bool> checkIfDocumentExists(String collectionName, String docId) async {
-//   DocumentSnapshot documentSnapshot = await _firestore
-//       .collection(collectionName)
-//       .document(docId).collection(collectionPath)
-//       .get();
 
-//   return documentSnapshot.exists;
-// }
   Future<void> updateDatabase() async {
     final firestoreInstance = Firestore.instance;
     var docs = Firestore.instance.document('Users/$this.userId');
