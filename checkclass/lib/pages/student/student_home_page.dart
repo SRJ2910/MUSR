@@ -53,14 +53,16 @@ class _StudentHomePageState extends State<StudentHomePage> {
 
   signOut() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    prefs.clear();
+    await prefs.clear();
     try {
+      final FirebaseAuth _auth = FirebaseAuth.instance;
+      await _auth.signOut();
       Navigator.pushAndRemoveUntil(
           context,
           MaterialPageRoute(builder: (context) => Registration()),
           (route) => false);
-      await widget.auth.signOut();
-      widget.logoutCallback();
+      // await widget.auth.signOut();
+      // widget.logoutCallback();
     } catch (e) {
       print(e);
     }
@@ -271,11 +273,10 @@ class _StudentHomePageState extends State<StudentHomePage> {
     try {
       final docSnapshot = await docRef.get();
       Map<String, dynamic> data = docSnapshot.data;
-      print(data);
       if (!data.containsKey('currentAttendance')) {
         return true;
       } else {
-        Map<String, dynamic> attendance = data['currentAttendance'];
+        Map<dynamic, dynamic> attendance = data['currentAttendance'];
 
         if (attendance.containsKey(studentID)) {
           print("Attendance Already Marked");
@@ -300,6 +301,8 @@ class _StudentHomePageState extends State<StudentHomePage> {
     final newData = {
       'currentAttendance': {studentID: name}
     };
+
+    print(newData);
     docRef
         .setData(newData, merge: true)
         .then((value) => print(
