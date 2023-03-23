@@ -1,12 +1,12 @@
 import 'dart:io';
 
+import 'package:better_open_file/better_open_file.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
 import 'package:musr/services/authentication.dart';
-import 'package:open_file/open_file.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:syncfusion_flutter_xlsio/xlsio.dart' as syexcel;
 
@@ -113,7 +113,7 @@ class _TeacherBasicSecPageState extends State<TeacherBasicSecPage> {
                           borderRadius: BorderRadius.all(Radius.circular(25))),
                       child: Center(
                         child: _loading
-                            ? CircularProgressIndicator()
+                            ? CircularProgressIndicator(color: Colors.white)
                             : Text(
                                 'View',
                                 style: TextStyle(
@@ -424,9 +424,20 @@ class _TeacherBasicSecPageState extends State<TeacherBasicSecPage> {
                     Center(
                       child: Container(
                         margin: EdgeInsets.fromLTRB(0, 20, 0, 0),
-                        child: RaisedButton(
-                            color: Colors.indigo,
-                            textColor: Colors.white,
+                        child: ElevatedButton(
+                            // color: Colors.indigo,
+                            // textColor: Colors.white,
+                            style: ButtonStyle(
+                              elevation: MaterialStateProperty.all(5.0),
+                              shape: MaterialStateProperty.all<
+                                  RoundedRectangleBorder>(
+                                RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(30.0),
+                                ),
+                              ),
+                              backgroundColor:
+                                  MaterialStateProperty.all(Colors.deepPurple),
+                            ),
                             onPressed: () {
                               setState(() {
                                 shows = 0;

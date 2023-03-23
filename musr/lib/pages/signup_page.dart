@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:musr/pages/register_page.dart';
 import 'package:musr/services/authentication.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class Signuppage extends StatefulWidget {
   Signuppage({Key? key}) : super(key: key);
@@ -88,6 +89,10 @@ class _SignuppageState extends State<Signuppage> {
           _formKey.currentState!.reset();
         });
       }
+    } else {
+      setState(() {
+        _isLoading = false;
+      });
     }
   }
 
@@ -106,11 +111,14 @@ class _SignuppageState extends State<Signuppage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        body: Stack(
-      children: <Widget>[
-        _showForm(),
-        _showCircularProgress(),
-      ],
+        body: SingleChildScrollView(
+      child: Column(
+        children: <Widget>[
+          _showForm(),
+          privacy_terms(),
+          // _showCircularProgress(),
+        ],
+      ),
     ));
   }
 
@@ -215,7 +223,7 @@ class _SignuppageState extends State<Signuppage> {
         children: [
           const Icon(
             Icons.person,
-            color: Colors.grey,
+            color: Colors.black,
           ),
           const SizedBox(width: 15),
           Expanded(
@@ -293,7 +301,7 @@ class _SignuppageState extends State<Signuppage> {
             hintText: 'Email',
             icon: Icon(
               Icons.mail,
-              color: Colors.grey,
+              color: Colors.black,
             )),
         validator: (value) => value!.isEmpty ? 'Email can\'t be empty' : null,
         onSaved: (value) => _email = value!.trim(),
@@ -312,7 +320,7 @@ class _SignuppageState extends State<Signuppage> {
             hintText: 'Name',
             icon: Icon(
               Icons.person,
-              color: Colors.grey,
+              color: Colors.black,
             )),
         validator: (value) => value!.isEmpty ? 'Name can\'t be empty' : null,
         onSaved: (value) => _name = value!.trim(),
@@ -331,7 +339,7 @@ class _SignuppageState extends State<Signuppage> {
             hintText: 'Password',
             icon: Icon(
               Icons.lock,
-              color: Colors.grey,
+              color: Colors.black,
             )),
         validator: (value) =>
             value!.isEmpty ? 'Password can\'t be empty' : null,
@@ -345,15 +353,72 @@ class _SignuppageState extends State<Signuppage> {
         padding: const EdgeInsets.fromLTRB(0.0, 45.0, 0.0, 0.0),
         child: SizedBox(
           height: 40.0,
-          child: RaisedButton(
-            elevation: 5.0,
-            shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(30.0)),
-            color: Colors.deepPurple,
+          child: ElevatedButton(
+            style: ButtonStyle(
+              elevation: MaterialStateProperty.all(5.0),
+              shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+                RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(30.0),
+                ),
+              ),
+              backgroundColor: MaterialStateProperty.all(Colors.deepPurple), 
+            ),
             onPressed: validateAndSubmit,
-            child: const Text('Register',
-                style: TextStyle(fontSize: 20.0, color: Colors.white)),
+            child: _isLoading
+                ? Center(
+                    child: CircularProgressIndicator(
+                      color: Colors.white,
+                    ),
+                  )
+                : Text('Register',
+                    style: TextStyle(fontSize: 20.0, color: Colors.white)),
           ),
         ));
+  }
+
+  Widget privacy_terms() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      children: [
+        GestureDetector(
+            child: const Text(
+              '''Terms of service''',
+              style: TextStyle(
+                  fontSize: 12.0,
+                  fontWeight: FontWeight.w300,
+                  decoration: TextDecoration.underline,
+                  color: Colors.deepPurple),
+            ),
+            onTap: () async {
+              await launchUrl(
+                Uri.parse(
+                    'https://doc-hosting.flycricket.io/musr-smart-attendance-system-terms-of-use/b31021e8-8d86-4ad4-84a7-ddeedb442dc8/terms'),
+                mode: LaunchMode.inAppWebView,
+              );
+            }),
+        const Text(
+          '''&''',
+          textScaleFactor: 1.2,
+          style:
+              TextStyle(fontWeight: FontWeight.bold, color: Colors.deepPurple),
+        ),
+        GestureDetector(
+            child: const Text(
+              '''Privacy Policy''',
+              style: TextStyle(
+                  fontSize: 12.0,
+                  fontWeight: FontWeight.w300,
+                  decoration: TextDecoration.underline,
+                  color: Colors.deepPurple),
+            ),
+            onTap: () async {
+              await launchUrl(
+                Uri.parse(
+                    'https://doc-hosting.flycricket.io/musr-smart-attendance-system-privacy-policy/e02edcb1-0fe2-473c-ae79-f238c8ef5fee/privacy'),
+                mode: LaunchMode.inAppWebView,
+              );
+            }),
+      ],
+    );
   }
 }

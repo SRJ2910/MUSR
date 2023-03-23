@@ -56,14 +56,14 @@ class _RegistrationState extends State<Registration> {
             await _firebaseFirestore.collection('user').doc(userId).get();
         print(result['role']);
         if (result['role'] == "Student") {
-          fetchStudentData(userId);
+          await fetchStudentData(userId);
           Navigator.pushAndRemoveUntil(
               context,
               MaterialPageRoute(builder: (context) => StudentHomePage()),
               (route) => false);
         }
         if (result['role'] == "Teacher") {
-          fetchTeacherData(userId);
+          await fetchTeacherData(userId);
           Navigator.pushAndRemoveUntil(
               context,
               MaterialPageRoute(builder: (context) => TeacherHomePage()),
@@ -89,16 +89,21 @@ class _RegistrationState extends State<Registration> {
           _formKey.currentState!.reset();
         });
       }
+    } else {
+      setState(() {
+        _isLoading = false;
+      });
     }
   }
 
-  void fetchStudentData(String? userID) async {
+  Future<void> fetchStudentData(String? userID) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     await _firebaseFirestore
         .collection('user')
         .doc(userID)
         .get()
         .then((DocumentSnapshot documentSnapshot) {
+      print(documentSnapshot.get('batch'));
       if (documentSnapshot.exists) {
         prefs.setString('name', documentSnapshot.get('name'));
         prefs.setString('email', documentSnapshot.get('email'));
@@ -110,7 +115,7 @@ class _RegistrationState extends State<Registration> {
     });
   }
 
-  void fetchTeacherData(String? userID) async {
+  Future<void> fetchTeacherData(String? userID) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     await _firebaseFirestore
         .collection('user')
@@ -162,8 +167,8 @@ class _RegistrationState extends State<Registration> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Stack(
-            children: <Widget>[_showForm(), _showCircularProgress()],
+          Column(
+            children: <Widget>[_showForm()],
           ),
           Padding(
             padding: const EdgeInsets.all(15.0),
@@ -217,11 +222,11 @@ class _RegistrationState extends State<Registration> {
   }
 
   Widget _showForm() {
-    return new Container(
-        padding: EdgeInsets.all(16.0),
-        child: new Form(
+    return Container(
+        padding: const EdgeInsets.all(16.0),
+        child: Form(
           key: _formKey,
-          child: new ListView(
+          child: ListView(
             shrinkWrap: true,
             children: <Widget>[
               showLogo(),
@@ -281,7 +286,7 @@ class _RegistrationState extends State<Registration> {
             hintText: 'Email',
             icon: Icon(
               Icons.mail,
-              color: Colors.grey,
+              color: Colors.black,
             )),
         validator: (value) => value!.isEmpty ? 'Email can\'t be empty' : null,
         onSaved: (value) => _email = value!.trim(),
@@ -300,7 +305,7 @@ class _RegistrationState extends State<Registration> {
             hintText: 'Password',
             icon: Icon(
               Icons.lock,
-              color: Colors.grey,
+              color: Colors.black,
             )),
         validator: (value) =>
             value!.isEmpty ? 'Password can\'t be empty' : null,
@@ -314,14 +319,24 @@ class _RegistrationState extends State<Registration> {
         padding: EdgeInsets.fromLTRB(0.0, 45.0, 0.0, 0.0),
         child: SizedBox(
           height: 40.0,
-          child: RaisedButton(
-            elevation: 5.0,
-            shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(30.0)),
-            color: Colors.deepPurple,
+          child: ElevatedButton(
+            style: ButtonStyle(
+              elevation: MaterialStateProperty.all(5.0),
+              shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+                RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(30.0),
+                ),
+              ),
+              backgroundColor: MaterialStateProperty.all(Colors.deepPurple), 
+            ),
             onPressed: validateAndSubmit,
-            child: const Text('Login',
-                style: TextStyle(fontSize: 20.0, color: Colors.white)),
+            child: _isLoading
+                ? Center(
+                    child: CircularProgressIndicator(
+                    color: Colors.white,
+                  ))
+                : Text('Login',
+                    style: TextStyle(fontSize: 20.0, color: Colors.white)),
           ),
         ));
   }

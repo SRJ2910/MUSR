@@ -185,7 +185,8 @@ class _StudentLoginState extends State<StudentLogin> {
               Icons.lock,
               color: Colors.grey,
             )),
-        validator: (value) => value!.isEmpty ? 'Password can\'t be empty' : null,
+        validator: (value) =>
+            value!.isEmpty ? 'Password can\'t be empty' : null,
         onSaved: (value) => _password = value!.trim(),
       ),
     );
@@ -196,11 +197,16 @@ class _StudentLoginState extends State<StudentLogin> {
         padding: const EdgeInsets.fromLTRB(0.0, 45.0, 0.0, 0.0),
         child: SizedBox(
           height: 40.0,
-          child: RaisedButton(
-            elevation: 5.0,
-            shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(30.0)),
-            color: Colors.blue,
+          child: ElevatedButton(
+            style: ButtonStyle(
+              elevation: MaterialStateProperty.all(5.0),
+              shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+                RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(30.0),
+                ),
+              ),
+              backgroundColor: MaterialStateProperty.all(Colors.blue),
+            ),
             onPressed: validateAndSubmit,
             child: const Text('Login',
                 style: TextStyle(fontSize: 20.0, color: Colors.white)),

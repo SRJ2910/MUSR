@@ -7,9 +7,9 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:1025672671681:android:c1b1ef76fdcee1874bbf40",
+        "mobilesdk_app_id": "1:1025672671681:android:886b3492ad6d56554bbf40",
         "android_client_info": {
-          "package_name": "com.example.musr"
+          "package_name": "com.srj.musr"
         }
       },
       "oauth_client": [

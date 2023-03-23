@@ -81,7 +81,6 @@ class _TeacherBasicPageState extends State<TeacherBasicPage> {
         // setState(() {
         //   _isLoading = false;
         // });
-
       } catch (e) {
         print('Error: $e');
         setState(() {
@@ -258,11 +257,18 @@ class _TeacherBasicPageState extends State<TeacherBasicPage> {
                             onSaved: (value) => _batch = value!.trim(),
                           ),
                           const SizedBox(height: 20),
-                          RaisedButton(
-                            elevation: 5.0,
-                            shape: new RoundedRectangleBorder(
-                                borderRadius: new BorderRadius.circular(30.0)),
-                            color: Colors.deepPurple,
+                          ElevatedButton(
+                            style: ButtonStyle(
+                              elevation: MaterialStateProperty.all(5.0),
+                              shape: MaterialStateProperty.all<
+                                  RoundedRectangleBorder>(
+                                RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(30.0),
+                                ),
+                              ),
+                              backgroundColor:
+                                  MaterialStateProperty.all(Colors.deepPurple),
+                            ),
                             onPressed: validateAndSubmit,
                             child: new Text('Create Course',
                                 style: new TextStyle(

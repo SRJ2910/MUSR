@@ -72,6 +72,7 @@ class _StudentHomePageState extends State<StudentHomePage> {
 
   @override
   Widget build(BuildContext context) {
+    // print(id);
     return WillPopScope(
         onWillPop: () async => false,
         child: MaterialApp(
@@ -165,6 +166,7 @@ class _StudentHomePageState extends State<StudentHomePage> {
     try {
       await qrCodeDecoder(barcodeScanRes, id);
     } catch (e) {
+      print(e);
       print("SOME ERROR OCCURED");
       // scan();
     }
@@ -217,6 +219,8 @@ class _StudentHomePageState extends State<StudentHomePage> {
             '-' +
             DateTime.now().year.toString();
     String id_batch = studentID.substring(0, 4);
+
+    print(id_batch);
     if (id_batch == batch)
       validateQRcode(code, courseID, batch, date, studentID);
     else {

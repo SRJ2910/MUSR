@@ -84,13 +84,10 @@ class _TeacherHomePageState extends State<TeacherHomePage> {
             ),
             backgroundColor: Colors.deepPurple,
             actions: <Widget>[
-              FlatButton(
-                  child: Text('Logout',
-                      style: new TextStyle(
-                          fontSize: 20.0,
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold)),
-                  onPressed: signOut),
+              IconButton(
+                icon: const Icon(Icons.logout),
+                onPressed: signOut,
+              ),
             ],
           ),
           body: TabBarView(

@@ -2,6 +2,7 @@ import 'dart:collection';
 import 'dart:math';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:syncfusion_flutter_barcodes/barcodes.dart';
 
@@ -19,7 +20,7 @@ class QrGenerator extends StatefulWidget {
 class _QrGeneratorState extends State<QrGenerator> {
   List<String> _qrValue = [];
   int globalIndex = 0;
-  
+
   final FirebaseFirestore _firebaseFirestore = FirebaseFirestore.instance;
 
   @override
@@ -31,37 +32,35 @@ class _QrGeneratorState extends State<QrGenerator> {
 
   @override
   Widget build(BuildContext context) {
-    List<String> _participants = [
-      'student_1',
-      'student_2',
-      'student_3',
-      'student_4',
-      'student_5',
-      'student_6'
-    ];
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.pink,
+        backgroundColor: Colors.deepPurple,
         title: Text(
           "${widget.courseId}",
           overflow: TextOverflow.visible,
           softWrap: true,
         ),
       ),
-      body: SingleChildScrollView(
-        child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: <Widget>[
-              // _textBox(widget.courseName, widget.courseId),
-              _qrBox(),
-              // submitButton(),
-              // _presenceBox(_participants)
-              _presentBox()
-            ],
-          ),
-        ),
-      ),
+      body: kIsWeb
+          ? Center(
+              child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: <Widget>[
+                    Expanded(
+                      child: _qrBox(),
+                    ),
+                    Expanded(child: _presentBox()),
+                  ]),
+            )
+          : SingleChildScrollView(
+              child: Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: <Widget>[_qrBox(), _presentBox()],
+                ),
+              ),
+            ),
     );
   }
 
@@ -196,12 +195,11 @@ class _QrGeneratorState extends State<QrGenerator> {
             Padding(
               padding: const EdgeInsets.only(top: 10),
               child: Container(
-                height: 250,
+                height: kIsWeb ? 500 : 250,
                 child: ListView.builder(
                   itemCount: present_student_ID.length,
                   itemBuilder: (BuildContext context, int index) {
                     return ListTile(
-                      // focusColor: Colors.amber,
                       iconColor: Colors.black,
                       leading: Icon(Icons.person),
                       title: Text(present_student_Name[index]),
@@ -319,7 +317,8 @@ class _QrGeneratorState extends State<QrGenerator> {
   }
 
   randomvalue() {
-    return widget.courseId! + widget.batch! +
+    return widget.courseId! +
+        widget.batch! +
         Random().nextInt(999999).toString() +
         widget.courseName!.substring(0, 3) +
         Random().nextInt(999999).toString();
