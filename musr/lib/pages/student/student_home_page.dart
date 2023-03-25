@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import "package:cloud_firestore/cloud_firestore.dart";
 import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
@@ -7,6 +8,7 @@ import 'package:musr/pages/register_page.dart';
 import 'package:musr/pages/teacher/teach_tab2_page.dart';
 
 import 'package:musr/services/authentication.dart';
+import 'package:new_version_plus/new_version_plus.dart';
 
 import 'package:qrscan/qrscan.dart' as scanner;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -40,8 +42,18 @@ class _StudentHomePageState extends State<StudentHomePage> {
   @override
   void initState() {
     super.initState();
+    if (!kIsWeb) _checkUpdate();
     getCachedData();
     //_checkEmailVerification();
+  }
+
+  final newVersionPlus = NewVersionPlus();
+  Future<void> _checkUpdate() async {
+    final status = await newVersionPlus.getVersionStatus();
+    if (status!.canUpdate) {
+      newVersionPlus.showUpdateDialog(
+          context: context, versionStatus: status, allowDismissal: false);
+    }
   }
 
   getCachedData() {

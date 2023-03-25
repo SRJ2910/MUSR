@@ -1,9 +1,12 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:musr/pages/Admin/admin_homepage.dart';
 import 'package:musr/pages/signup_page.dart';
 import 'package:musr/pages/student/student_home_page.dart';
 import 'package:musr/pages/teacher/teach_home_page.dart';
 import 'package:musr/services/authentication.dart';
+import 'package:new_version_plus/new_version_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class Registration extends StatefulWidget {
@@ -35,6 +38,24 @@ class _RegistrationState extends State<Registration> {
     return false;
   }
 
+  @override
+  void initState() {
+    
+    if (!kIsWeb) _checkUpdate();
+    _errorMessage = "";
+    _isLoading = false;
+    // checkUser();
+    super.initState();
+  }
+
+  final newVersionPlus = NewVersionPlus();
+  Future<void> _checkUpdate() async {
+    final status = await newVersionPlus.getVersionStatus();
+    if (status!.canUpdate) {
+      newVersionPlus.showUpdateDialog(
+          context: context, versionStatus: status, allowDismissal: false);
+    }
+  }
   // Perform login or signup
 
   /// Databse is not connected yet
@@ -55,34 +76,33 @@ class _RegistrationState extends State<Registration> {
         var result =
             await _firebaseFirestore.collection('user').doc(userId).get();
         print(result['role']);
-        if (result['role'] == "Student") {
-          await fetchStudentData(userId);
-          Navigator.pushAndRemoveUntil(
-              context,
-              MaterialPageRoute(builder: (context) => StudentHomePage()),
-              (route) => false);
+        if (result['access'] == false) {
+          throw "Your profile is under verification !";
+        } else {
+          if (result['role'] == "Student") {
+            await fetchStudentData(userId);
+            Navigator.pushAndRemoveUntil(
+                context,
+                MaterialPageRoute(builder: (context) => StudentHomePage()),
+                (route) => false);
+          }
+          if (result['role'] == "Teacher") {
+            await fetchTeacherData(userId);
+            Navigator.pushAndRemoveUntil(
+                context,
+                MaterialPageRoute(builder: (context) => TeacherHomePage()),
+                (route) => false);
+          }
+          if (result['role'] == "Admin") {
+            await fetchTeacherData(userId);
+            Navigator.pushAndRemoveUntil(
+                context,
+                MaterialPageRoute(builder: (context) => admin_homepage()),
+                (route) => false);
+          }
         }
-        if (result['role'] == "Teacher") {
-          await fetchTeacherData(userId);
-          Navigator.pushAndRemoveUntil(
-              context,
-              MaterialPageRoute(builder: (context) => TeacherHomePage()),
-              (route) => false);
-        }
-        //   throw Exception("Only Teachers can login");
-        // print('Signed in: $userId');
-        // setState(() {
-        //   _isLoading = false;
-        // });
-
-        // if (userId.length > 0 && userId != null) {
-        //   Navigator.push(
-        //     context,
-        //     MaterialPageRoute(builder: (context) => Registration()),
-        //   );
-        // }
       } catch (e) {
-        print('Error: $e');
+        // print('$e');
         setState(() {
           _isLoading = false;
           _errorMessage = e.toString();
@@ -129,14 +149,6 @@ class _RegistrationState extends State<Registration> {
         print("User Doesn't Exist");
       }
     });
-  }
-
-  @override
-  void initState() {
-    _errorMessage = "";
-    _isLoading = false;
-    // checkUser();
-    super.initState();
   }
 
   void resetForm() {
@@ -327,7 +339,7 @@ class _RegistrationState extends State<Registration> {
                   borderRadius: BorderRadius.circular(30.0),
                 ),
               ),
-              backgroundColor: MaterialStateProperty.all(Colors.deepPurple), 
+              backgroundColor: MaterialStateProperty.all(Colors.deepPurple),
             ),
             onPressed: validateAndSubmit,
             child: _isLoading

@@ -62,12 +62,14 @@ class _SignuppageState extends State<Signuppage> {
             'name': _name,
             'batch': _batch,
             'id': _id,
+            'access': false,
           });
         } else {
           await _firebaseFirestore.collection('user').doc(userId).set({
             'email': _email,
             'role': _role,
             'name': _name,
+            'access': false,
           });
         }
         print("User Added Successfully");
