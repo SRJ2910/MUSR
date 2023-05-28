@@ -1,4 +1,4 @@
-# <p align=center>MUSR, The Smart Attendance Software</p>
+# <p align=center>MUSR - The Smart Attendance Software</p>
 <p align="center">
 <img width="180" height="200" src="musr.png">
 </p>
